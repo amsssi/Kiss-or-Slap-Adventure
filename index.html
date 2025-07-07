@@ -1,0 +1,199 @@
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiss or Slap Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .choice-box {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .choice-box:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .heart {
+            color: #FF4081;
+            animation: pulse 1.5s infinite;
+        }
+        .angry {
+            color: #F44336;
+            animation: shake 0.5s infinite;
+        }
+        .neutral {
+            color: #2196F3;
+            animation: float 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake {
+            0% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+            100% { transform: rotate(-5deg); }
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-pink-50 to-blue-50 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden p-8">
+        <h1 class="text-3xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-blue-500">Kiss or Slap Adventure</h1>
+        
+        <div id="step1" class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">First, choose your timing:</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="choice-box bg-pink-100 rounded-xl p-4 text-center" onclick="selectOption('now')">
+                    <span class="text-5xl">🔔</span>
+                    <p class="mt-2 font-medium">Now</p>
+                </div>
+                <div class="choice-box bg-blue-100 rounded-xl p-4 text-center" onclick="selectOption('later')">
+                    <span class="text-5xl">⏳</span>
+                    <p class="mt-2 font-medium">Later</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="step2" class="mb-8 hidden" style="display: none;">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Now choose your action:</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="choice-box bg-green-100 rounded-xl p-4 text-center" onclick="selectOption('kiss')">
+                    <span class="text-5xl heart">💋</span>
+                    <p class="mt-2 font-medium">Kiss</p>
+                </div>
+                <div class="choice-box bg-red-100 rounded-xl p-4 text-center" onclick="selectOption('slap')">
+                    <span class="text-5xl angry">👋</span>
+                    <p class="mt-2 font-medium">Slap</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="step3" class="mb-8 hidden" style="display: none;">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Where should this happen?</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="choice-box bg-yellow-100 rounded-xl p-4 text-center" onclick="selectOption('on')">
+                    <span class="text-5xl neutral">🎯</span>
+                    <p class="mt-2 font-medium">On</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="step4" class="hidden" style="display: none;">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Final choice:</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="choice-box bg-purple-100 rounded-xl p-4 text-center" onclick="selectOption('lips')">
+                    <span class="text-5xl heart">👄</span>
+                    <p class="mt-2 font-medium">Lips</p>
+                </div>
+                <div class="choice-box bg-indigo-100 rounded-xl p-4 text-center" onclick="selectOption('cheeks')">
+                    <span class="text-5xl">🍑</span>
+                    <p class="mt-2 font-medium">Cheeks</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="result" class="hidden text-center py-8">
+            <img src="https://placehold.co/600x400" id="resultImage" alt="An illustration showing the result of the choices made" class="mx-auto rounded-xl mb-6"/>
+            <h2 id="resultTitle" class="text-2xl font-bold mb-4"></h2>
+            <p id="resultDescription" class="text-gray-600"></p>
+            <button onclick="resetGame()" class="mt-6 px-6 py-2 bg-gradient-to-r from-pink-500 to-blue-500 text-white rounded-full hover:shadow-lg transition-all">
+                Play Again
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let choices = [];
+        const results = {
+            'now_kiss_on_lips': {
+                title: "Passionate Moment!",
+                description: "A romantic kiss right now directly on the lips – sparks are flying!",
+                image: "https://placehold.co/600x400?text=Romantic+Kiss&font=roboto"
+            },
+            'now_kiss_on_cheeks': {
+                title: "Sweet Cheek Kiss!",
+                description: "A gentle kiss on the cheek – sweet and affectionate.",
+                image: "https://placehold.co/600x400?text=Cheek+Kiss&font=roboto"
+            },
+            'now_slap_on_lips': {
+                title: "Ouch! Lip Slap",
+                description: "Slapping right on the lips – that must have stung a bit!",
+                image: "https://placehold.co/600x400?text=Lip+Slap&font=roboto"
+            },
+            'now_slap_on_cheeks': {
+                title: "Face Slap!",
+                description: "A classic slap across the cheek – dramatic and intense!",
+                image: "https://placehold.co/600x400?text=Faceslap&font=roboto"
+            },
+            'later_kiss_on_lips': {
+                title: "Anticipated Passion",
+                description: "The wait made the kiss on the lips even more special.",
+                image: "https://placehold.co/600x400?text=Anticipated+Kiss&font=roboto"
+            },
+            'later_kiss_on_cheeks': {
+                title: "Delayed Affection",
+                description: "The cheek kiss was worth waiting for.",
+                image: "https://placehold.co/600x400?text=Delayed+Kiss&font=roboto"
+            },
+            'later_slap_on_lips': {
+                title: "Cold Slap",
+                description: "The delayed slap on the lips carried extra meaning.",
+                image: "https://placehold.co/600x400?text=Cold+Slap&font=roboto"
+            },
+            'later_slap_on_cheeks': {
+                title: "Planned Slap",
+                description: "The patience made the cheek slap even more impactful.",
+                image: "https://placehold.co/600x400?text=Planned+Slap&font=roboto"
+            }
+        };
+
+        function selectOption(choice) {
+            choices.push(choice);
+            
+            if (choices.length === 1) {
+                document.getElementById('step1').style.display = 'none';
+                document.getElementById('step2').style.display = 'block';
+            } else if (choices.length === 2) {
+                document.getElementById('step2').style.display = 'none';
+                document.getElementById('step3').style.display = 'block';
+            } else if (choices.length === 3) {
+                document.getElementById('step3').style.display = 'none';
+                document.getElementById('step4').style.display = 'block';
+            } else if (choices.length === 4) {
+                document.getElementById('step4').style.display = 'none';
+                showResult();
+            }
+        }
+
+        function showResult() {
+            const key = choices.join('_');
+            const result = results[key] || {
+                title: "Interesting Choice!",
+                description: "Your unique combination creates a special moment.",
+                image: "https://placehold.co/600x400?text=Special+Moment&font=roboto"
+            };
+
+            document.getElementById('resultImage').src = result.image;
+            document.getElementById('resultImage').alt = `Illustration of ${result.title} scenario`;
+            document.getElementById('resultTitle').textContent = result.title;
+            document.getElementById('resultDescription').textContent = result.description;
+            document.getElementById('result').style.display = 'block';
+        }
+
+        function resetGame() {
+            choices = [];
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('step1').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+```
